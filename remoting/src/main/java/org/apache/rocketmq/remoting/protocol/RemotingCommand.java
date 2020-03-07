@@ -32,6 +32,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * | length(4字节) | header length(4字节) | header data | body data |
+ * length = 2+3+4
+ * 第二部分即 序列化类型&消息头长度：同样占用一个int类型，第一个字节表示序列化类型，后面三个字节表示消息头长度；
+ */
 public class RemotingCommand {
     public static final String SERIALIZE_TYPE_PROPERTY = "rocketmq.serialize.type";
     public static final String SERIALIZE_TYPE_ENV = "ROCKETMQ_SERIALIZE_TYPE";
@@ -142,9 +147,19 @@ public class RemotingCommand {
         return decode(byteBuffer);
     }
 
+    /**
+     * 在调用该方法之前，已经在 NettyDecoder 中进行了拆包处理，去掉了总长度域4个字节
+     *
+     * @param byteBuffer
+     * @return
+     */
     public static RemotingCommand decode(final ByteBuffer byteBuffer) {
+        //获取byteBuffer的总长度
         int length = byteBuffer.limit();
+        //获取前4个字节，组装int类型，该长度为 header length ，因为NettyDecoder已经去除了前四个字节
         int oriHeaderLen = byteBuffer.getInt();
+
+        //获取消息头的长度，这里和0xFFFFFF做与运算，编码时候的长度即为24位
         int headerLength = getHeaderLength(oriHeaderLen);
 
         byte[] headerData = new byte[headerLength];
@@ -163,6 +178,12 @@ public class RemotingCommand {
         return cmd;
     }
 
+    /**
+     * 只保留最后24个bit
+     *
+     * @param length
+     * @return
+     */
     public static int getHeaderLength(int length) {
         return length & 0xFFFFFF;
     }
@@ -209,12 +230,22 @@ public class RemotingCommand {
         return true;
     }
 
+    /**
+     * markProtocolType方法是将RPC类型和headerData长度编码放到一个byte[4]数组中
+     *
+     * @param source
+     * @param type
+     * @return
+     */
     public static byte[] markProtocolType(int source, SerializeType type) {
         byte[] result = new byte[4];
 
         result[0] = type.getCode();
+        //右移16位后再和255与->“16-24位”
         result[1] = (byte) ((source >> 16) & 0xFF);
+        //右移8位后再和255与->“8-16位”
         result[2] = (byte) ((source >> 8) & 0xFF);
+        //右移0位后再和255与->“8-0位”
         result[3] = (byte) (source & 0xFF);
         return result;
     }
@@ -328,33 +359,42 @@ public class RemotingCommand {
 
     public ByteBuffer encode() {
         // 1> header length size
+        // 消息总长度
         int length = 4;
 
         // 2> header data length
+        // 将消息头编码成byte[]
         byte[] headerData = this.headerEncode();
         length += headerData.length;
 
         // 3> body data length
+        // 消息主体长度
         if (this.body != null) {
             length += body.length;
         }
 
+        //这里之所以需要 +4 是因为length只计算了2+3+4三个部分的字节长度，而第一部分的length所占用的4个字节也需要计算在内
         ByteBuffer result = ByteBuffer.allocate(4 + length);
 
         // length
+        // 将消息总长度放入ByteBuffer
         result.putInt(length);
 
         // header length
+        // 将消息头长度放入ByteBuffer
         result.put(markProtocolType(headerData.length, serializeTypeCurrentRPC));
 
         // header data
+        // 将消息头数据放入ByteBuffer
         result.put(headerData);
 
         // body data;
+        // 将消息主体放入ByteBuffer
         if (this.body != null) {
             result.put(this.body);
         }
 
+        //重置ByteBuffer的position位置
         result.flip();
 
         return result;

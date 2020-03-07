@@ -54,6 +54,8 @@ public abstract class NettyRemotingAbstract {
     }
 
     /**
+     * 信号量可限制正在进行的单向请求的最大数量，从而保护系统内存。
+     * <p>
      * Semaphore to limit maximum number of on-going one-way requests, which protects system memory footprint.
      */
     protected final Semaphore semaphoreOneway;
@@ -292,6 +294,7 @@ public abstract class NettyRemotingAbstract {
      */
     private void executeInvokeCallback(final ResponseFuture responseFuture) {
         boolean runInThisThread = false;
+        //获取处理回调任务的线程池，如果为空，则在当前线程中执行回调，当前线程是 netty event-loop 线程，不适合处理耗时任务
         ExecutorService executor = this.getCallbackExecutor();
         if (executor != null) {
             try {
