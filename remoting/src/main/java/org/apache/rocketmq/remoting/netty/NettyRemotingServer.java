@@ -180,9 +180,11 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
                     }
                 });
 
+        //初始化一些handler
         prepareSharableHandlers();
 
         ServerBootstrap childHandler =
+                //连接线程池、io线程池
                 this.serverBootstrap.group(this.eventLoopGroupBoss, this.eventLoopGroupSelector)
                         .channel(useEpoll() ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
                         .option(ChannelOption.SO_BACKLOG, 1024)
@@ -196,6 +198,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
                             @Override
                             public void initChannel(SocketChannel ch) throws Exception {
                                 ch.pipeline()
+                                        //执行handler的线程池
                                         .addLast(defaultEventExecutorGroup, HANDSHAKE_HANDLER_NAME, handshakeHandler)
                                         .addLast(defaultEventExecutorGroup,
                                                 encoder,
@@ -212,6 +215,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
         }
 
         try {
+            //开启端口监听
             ChannelFuture sync = this.serverBootstrap.bind().sync();
             InetSocketAddress addr = (InetSocketAddress) sync.channel().localAddress();
             this.port = addr.getPort();
@@ -219,10 +223,12 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
             throw new RuntimeException("this.serverBootstrap.bind().sync() InterruptedException", e1);
         }
 
+        //如果事件监听器不为空，则启动线程 同客户端
         if (this.channelEventListener != null) {
             this.nettyEventExecutor.start();
         }
 
+        //定时任务处理过期请求 同客户端
         this.timer.scheduleAtFixedRate(new TimerTask() {
 
             @Override

@@ -28,25 +28,41 @@ import java.util.concurrent.ExecutorService;
 
 public interface RemotingClient extends RemotingService {
 
+    /**
+     * 将传入的 addrs，更新为新的 NameServerAddress
+     *
+     * @param addrs
+     */
     void updateNameServerAddressList(final List<String> addrs);
 
     List<String> getNameServerAddressList();
 
-    RemotingCommand invokeSync(final String addr, final RemotingCommand request,
-                               final long timeoutMillis) throws InterruptedException, RemotingConnectException,
-            RemotingSendRequestException, RemotingTimeoutException;
+    /**
+     * 同步调用
+     */
+    RemotingCommand invokeSync(final String addr, final RemotingCommand request, final long timeoutMillis)
+            throws InterruptedException, RemotingConnectException, RemotingSendRequestException, RemotingTimeoutException;
 
-    void invokeAsync(final String addr, final RemotingCommand request, final long timeoutMillis,
-                     final InvokeCallback invokeCallback) throws InterruptedException, RemotingConnectException,
-            RemotingTooMuchRequestException, RemotingTimeoutException, RemotingSendRequestException;
+    /**
+     * 异步调用
+     */
+    void invokeAsync(final String addr, final RemotingCommand request, final long timeoutMillis, final InvokeCallback invokeCallback)
+            throws InterruptedException, RemotingConnectException, RemotingTooMuchRequestException, RemotingTimeoutException, RemotingSendRequestException;
 
+    /**
+     * 单次调用
+     */
     void invokeOneway(final String addr, final RemotingCommand request, final long timeoutMillis)
-            throws InterruptedException, RemotingConnectException, RemotingTooMuchRequestException,
-            RemotingTimeoutException, RemotingSendRequestException;
+            throws InterruptedException, RemotingConnectException, RemotingTooMuchRequestException, RemotingTimeoutException, RemotingSendRequestException;
 
-    void registerProcessor(final int requestCode, final NettyRequestProcessor processor,
-                           final ExecutorService executor);
+    /**
+     * 注册处理器
+     */
+    void registerProcessor(final int requestCode, final NettyRequestProcessor processor, final ExecutorService executor);
 
+    /**
+     * 获取执行回调任务的线程池
+     */
     ExecutorService getCallbackExecutor();
 
     void setCallbackExecutor(final ExecutorService callbackExecutor);

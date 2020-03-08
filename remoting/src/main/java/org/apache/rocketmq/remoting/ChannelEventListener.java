@@ -18,12 +18,28 @@ package org.apache.rocketmq.remoting;
 
 import io.netty.channel.Channel;
 
+
+/**
+ * 事件回调
+ */
 public interface ChannelEventListener {
+    /**
+     * 连接成功
+     */
     void onChannelConnect(final String remoteAddr, final Channel channel);
 
+    /**
+     * 连接关闭
+     */
     void onChannelClose(final String remoteAddr, final Channel channel);
 
+    /**
+     * 连接异常
+     */
     void onChannelException(final String remoteAddr, final Channel channel);
 
+    /**
+     *
+     */
     void onChannelIdle(final String remoteAddr, final Channel channel);
 }

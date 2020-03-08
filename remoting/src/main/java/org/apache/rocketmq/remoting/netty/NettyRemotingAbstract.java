@@ -64,11 +64,15 @@ public abstract class NettyRemotingAbstract {
      */
     protected final Semaphore semaphoreAsync;
     /**
+     * 每个请求对应一个ResponseFuture
+     * <p>
      * This map caches all on-going requests.
      */
     protected final ConcurrentMap<Integer /* opaque */, ResponseFuture> responseTable =
             new ConcurrentHashMap<Integer, ResponseFuture>(256);
     /**
+     * 每种 requestCode 对应一种请求处理器
+     * <p>
      * This container holds all processors per request code, aka, for each incoming request, we may look up the
      * responding processor in this map to handle the request.
      */
@@ -87,6 +91,8 @@ public abstract class NettyRemotingAbstract {
      */
     protected volatile SslContext sslContext;
     /**
+     * 自定义的 rpc 的 hooks
+     * <p>
      * custom rpc hooks
      */
     protected List<RPCHook> rpcHooks = new ArrayList<RPCHook>();
@@ -361,6 +367,9 @@ public abstract class NettyRemotingAbstract {
     public abstract ExecutorService getCallbackExecutor();
 
     /**
+     * 如果遇到异常情况（比如服务端没有response返回给客户端或者response因网络而丢失），
+     * responseTable的本地缓存Map将会出现堆积情况。这个时候需要一个定时任务来专门做responseTable的清理回收。
+     * 在RocketMQ的客户端/服务端启动时候会产生一个频率为1s调用一次来的定时任务检查所有的responseTable缓存中的responseFuture变量，判断是否已经得到返回, 并进行相应的处理。
      * <p>
      * This method is periodically invoked to scan and expire deprecated request.
      * </p>
@@ -435,7 +444,9 @@ public abstract class NettyRemotingAbstract {
                                 final InvokeCallback invokeCallback)
             throws InterruptedException, RemotingTooMuchRequestException, RemotingTimeoutException, RemotingSendRequestException {
         long beginStartTime = System.currentTimeMillis();
+        //相当于request ID, RemotingCommand会为每一个request产生一个request ID, 从0开始, 每次加1
         final int opaque = request.getOpaque();
+        //使用semaphore作流控，当多个线程同时往一个连接写数据时可以通过信号量控制permit同时写许可的数量
         boolean acquired = this.semaphoreAsync.tryAcquire(timeoutMillis, TimeUnit.MILLISECONDS);
         if (acquired) {
             final SemaphoreReleaseOnlyOnce once = new SemaphoreReleaseOnlyOnce(this.semaphoreAsync);
@@ -444,10 +455,12 @@ public abstract class NettyRemotingAbstract {
                 once.release();
                 throw new RemotingTimeoutException("invokeAsyncImpl call timeout");
             }
-
+            //根据request ID构建ResponseFuture
             final ResponseFuture responseFuture = new ResponseFuture(channel, opaque, timeoutMillis - costTime, invokeCallback, once);
+            //将ResponseFuture放入responseTable
             this.responseTable.put(opaque, responseFuture);
             try {
+                //往channel内写数据
                 channel.writeAndFlush(request).addListener(new ChannelFutureListener() {
                     @Override
                     public void operationComplete(ChannelFuture f) throws Exception {
@@ -460,6 +473,7 @@ public abstract class NettyRemotingAbstract {
                     }
                 });
             } catch (Exception e) {
+                //释放信号量
                 responseFuture.release();
                 log.warn("send a request command to channel <" + RemotingHelper.parseChannelRemoteAddr(channel) + "> Exception", e);
                 throw new RemotingSendRequestException(RemotingHelper.parseChannelRemoteAddr(channel), e);
@@ -486,10 +500,12 @@ public abstract class NettyRemotingAbstract {
             responseFuture.setSendRequestOK(false);
             responseFuture.putResponse(null);
             try {
+                //执行回调
                 executeInvokeCallback(responseFuture);
             } catch (Throwable e) {
                 log.warn("execute callback in requestFail, and callback throw", e);
             } finally {
+                //释放信号量
                 responseFuture.release();
             }
         }
@@ -570,6 +586,7 @@ public abstract class NettyRemotingAbstract {
 
             while (!this.isStopped()) {
                 try {
+                    //3s,有事件出队的话就会break，那后面的关闭事件怎么处理的？这里需要后面来解答 todo
                     NettyEvent event = this.eventQueue.poll(3000, TimeUnit.MILLISECONDS);
                     if (event != null && listener != null) {
                         switch (event.getType()) {

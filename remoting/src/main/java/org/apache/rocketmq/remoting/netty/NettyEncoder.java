@@ -28,6 +28,9 @@ import org.apache.rocketmq.remoting.protocol.RemotingCommand;
 
 import java.nio.ByteBuffer;
 
+/**
+ * 编码器
+ */
 @ChannelHandler.Sharable
 public class NettyEncoder extends MessageToByteEncoder<RemotingCommand> {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(RemotingHelper.ROCKETMQ_REMOTING);
