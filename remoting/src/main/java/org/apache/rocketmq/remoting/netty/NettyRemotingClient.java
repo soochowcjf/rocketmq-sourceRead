@@ -635,6 +635,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
 
             super.connect(ctx, remoteAddress, localAddress, promise);
 
+            //连接成功之后，加入连接事件
             if (NettyRemotingClient.this.channelEventListener != null) {
                 NettyRemotingClient.this.putNettyEvent(new NettyEvent(NettyEventType.CONNECT, remote, ctx.channel()));
             }
@@ -647,6 +648,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
             closeChannel(ctx.channel());
             super.disconnect(ctx, promise);
 
+            //连接断开之后，加入连接断开事件
             if (NettyRemotingClient.this.channelEventListener != null) {
                 NettyRemotingClient.this.putNettyEvent(new NettyEvent(NettyEventType.CLOSE, remoteAddress, ctx.channel()));
             }
@@ -672,6 +674,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
                     final String remoteAddress = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
                     log.warn("NETTY CLIENT PIPELINE: IDLE exception [{}]", remoteAddress);
                     closeChannel(ctx.channel());
+                    //监测没有数据读写，加入IDLE事件
                     if (NettyRemotingClient.this.channelEventListener != null) {
                         NettyRemotingClient.this
                                 .putNettyEvent(new NettyEvent(NettyEventType.IDLE, remoteAddress, ctx.channel()));
@@ -688,6 +691,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
             log.warn("NETTY CLIENT PIPELINE: exceptionCaught {}", remoteAddress);
             log.warn("NETTY CLIENT PIPELINE: exceptionCaught exception.", cause);
             closeChannel(ctx.channel());
+            //加入异常事件
             if (NettyRemotingClient.this.channelEventListener != null) {
                 NettyRemotingClient.this.putNettyEvent(new NettyEvent(NettyEventType.EXCEPTION, remoteAddress, ctx.channel()));
             }
