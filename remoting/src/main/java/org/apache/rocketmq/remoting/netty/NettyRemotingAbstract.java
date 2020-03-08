@@ -243,6 +243,8 @@ public abstract class NettyRemotingAbstract {
 
             try {
                 final RequestTask requestTask = new RequestTask(run, ctx.channel(), cmd);
+                //不同类型的请求业务码指定不同的处理器Processor处理，同时消息实际的处理并不是在当前线程，而是被封装成task放到业务处理器Processor对应的线程池中完成异步执行。
+                // (在RocketMQ中能看到很多地方都是这样的处理，这样的设计能够最大程度的保证异步，保证每个线程都专注处理自己负责的东西）
                 pair.getObject2().submit(requestTask);
             } catch (RejectedExecutionException e) {
                 if ((System.currentTimeMillis() % 10000) == 0) {

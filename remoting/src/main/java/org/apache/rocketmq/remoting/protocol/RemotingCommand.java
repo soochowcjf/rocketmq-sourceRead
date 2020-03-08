@@ -441,6 +441,12 @@ public class RemotingCommand {
         return encodeHeader(this.body != null ? this.body.length : 0);
     }
 
+    /**
+     * 该方法会编码协议的前三部分 即: | length(4字节) | header length(4字节) | header data |
+     *
+     * @param bodyLength
+     * @return
+     */
     public ByteBuffer encodeHeader(final int bodyLength) {
         // 1> header length size
         int length = 4;

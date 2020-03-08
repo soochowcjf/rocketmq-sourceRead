@@ -37,6 +37,7 @@ public class NettyDecoder extends LengthFieldBasedFrameDecoder {
             Integer.parseInt(System.getProperty("com.rocketmq.remoting.frameMaxLength", "16777216"));
 
     public NettyDecoder() {
+        //基于长度的解码器，0-4个字节是长度域，且前4个字节跳过
         super(FRAME_MAX_LENGTH, 0, 4, 0, 4);
     }
 
@@ -44,13 +45,14 @@ public class NettyDecoder extends LengthFieldBasedFrameDecoder {
     public Object decode(ChannelHandlerContext ctx, ByteBuf in) throws Exception {
         ByteBuf frame = null;
         try {
+            //得到跳过前4个字节的数据 即跳过长度域 | length(4字节) |
             frame = (ByteBuf) super.decode(ctx, in);
             if (null == frame) {
                 return null;
             }
 
             ByteBuffer byteBuffer = frame.nioBuffer();
-
+            //解码后面三个部分，包括三部分 | header length(4字节) | header data | body data |
             return RemotingCommand.decode(byteBuffer);
         } catch (Exception e) {
             log.error("decode exception, " + RemotingHelper.parseChannelRemoteAddr(ctx.channel()), e);
