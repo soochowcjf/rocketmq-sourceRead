@@ -285,6 +285,7 @@ public abstract class NettyRemotingAbstract {
 
             responseTable.remove(opaque);
 
+            //异步请求的话，会存在回调接口
             if (responseFuture.getInvokeCallback() != null) {
                 executeInvokeCallback(responseFuture);
             } else {
@@ -442,8 +443,7 @@ public abstract class NettyRemotingAbstract {
         }
     }
 
-    public void invokeAsyncImpl(final Channel channel, final RemotingCommand request, final long timeoutMillis,
-                                final InvokeCallback invokeCallback)
+    public void invokeAsyncImpl(final Channel channel, final RemotingCommand request, final long timeoutMillis, final InvokeCallback invokeCallback)
             throws InterruptedException, RemotingTooMuchRequestException, RemotingTimeoutException, RemotingSendRequestException {
         long beginStartTime = System.currentTimeMillis();
         //相当于request ID, RemotingCommand会为每一个request产生一个request ID, 从0开始, 每次加1

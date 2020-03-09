@@ -85,8 +85,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
         this(nettyClientConfig, null);
     }
 
-    public NettyRemotingClient(final NettyClientConfig nettyClientConfig,
-                               final ChannelEventListener channelEventListener) {
+    public NettyRemotingClient(final NettyClientConfig nettyClientConfig, final ChannelEventListener channelEventListener) {
         super(nettyClientConfig.getClientOnewaySemaphoreValue(), nettyClientConfig.getClientAsyncSemaphoreValue());
         this.nettyClientConfig = nettyClientConfig;
         this.channelEventListener = channelEventListener;
@@ -105,6 +104,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
             }
         });
 
+        //处理连接上的channel的读写事件
         this.eventLoopGroupWorker = new NioEventLoopGroup(1, new ThreadFactory() {
             private AtomicInteger threadIndex = new AtomicInteger(0);
 

@@ -35,8 +35,7 @@ public interface RemotingServer extends RemotingService {
      * @param processor
      * @param executor
      */
-    void registerProcessor(final int requestCode, final NettyRequestProcessor processor,
-                           final ExecutorService executor);
+    void registerProcessor(final int requestCode, final NettyRequestProcessor processor, final ExecutorService executor);
 
     /**
      * 注册默认的请求处理器
@@ -67,12 +66,11 @@ public interface RemotingServer extends RemotingService {
      * @throws RemotingSendRequestException
      * @throws RemotingTimeoutException
      */
-    RemotingCommand invokeSync(final Channel channel, final RemotingCommand request,
-                               final long timeoutMillis) throws InterruptedException, RemotingSendRequestException,
-            RemotingTimeoutException;
+    RemotingCommand invokeSync(final Channel channel, final RemotingCommand request, final long timeoutMillis)
+            throws InterruptedException, RemotingSendRequestException, RemotingTimeoutException;
 
     /**
-     * 同 RemotingClient端一样,异步通信,不返回 RemotingCommand，通过InvokeCallback来实现回调
+     * 异步通信,不返回 RemotingCommand，通过InvokeCallback来实现回调
      *
      * @param channel
      * @param request
@@ -83,9 +81,8 @@ public interface RemotingServer extends RemotingService {
      * @throws RemotingTimeoutException
      * @throws RemotingSendRequestException
      */
-    void invokeAsync(final Channel channel, final RemotingCommand request, final long timeoutMillis,
-                     final InvokeCallback invokeCallback) throws InterruptedException,
-            RemotingTooMuchRequestException, RemotingTimeoutException, RemotingSendRequestException;
+    void invokeAsync(final Channel channel, final RemotingCommand request, final long timeoutMillis, final InvokeCallback invokeCallback)
+            throws InterruptedException, RemotingTooMuchRequestException, RemotingTimeoutException, RemotingSendRequestException;
 
     /**
      * 同 RemotingClient端一样，单向通信，诸如心跳包
@@ -99,7 +96,6 @@ public interface RemotingServer extends RemotingService {
      * @throws RemotingSendRequestException
      */
     void invokeOneway(final Channel channel, final RemotingCommand request, final long timeoutMillis)
-            throws InterruptedException, RemotingTooMuchRequestException, RemotingTimeoutException,
-            RemotingSendRequestException;
+            throws InterruptedException, RemotingTooMuchRequestException, RemotingTimeoutException, RemotingSendRequestException;
 
 }
