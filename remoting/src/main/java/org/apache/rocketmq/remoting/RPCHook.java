@@ -23,8 +23,21 @@ import org.apache.rocketmq.remoting.protocol.RemotingCommand;
  * 对请求响应进行拦截，实现增强
  */
 public interface RPCHook {
+    /**
+     * 前置
+     *
+     * @param remoteAddr
+     * @param request
+     */
     void doBeforeRequest(final String remoteAddr, final RemotingCommand request);
 
+    /**
+     * 后置
+     *
+     * @param remoteAddr
+     * @param request
+     * @param response
+     */
     void doAfterResponse(final String remoteAddr, final RemotingCommand request,
                          final RemotingCommand response);
 }
