@@ -289,6 +289,7 @@ public abstract class NettyRemotingAbstract {
             if (responseFuture.getInvokeCallback() != null) {
                 executeInvokeCallback(responseFuture);
             } else {
+                //内部会释放countDownLatch
                 responseFuture.putResponse(cmd);
                 responseFuture.release();
             }
@@ -410,6 +411,7 @@ public abstract class NettyRemotingAbstract {
             final ResponseFuture responseFuture = new ResponseFuture(channel, opaque, timeoutMillis, null, null);
             this.responseTable.put(opaque, responseFuture);
             final SocketAddress addr = channel.remoteAddress();
+            //添加发送回调
             channel.writeAndFlush(request).addListener(new ChannelFutureListener() {
                 @Override
                 public void operationComplete(ChannelFuture f) throws Exception {
@@ -427,12 +429,15 @@ public abstract class NettyRemotingAbstract {
                 }
             });
 
+            //等待broker端返回响应
             RemotingCommand responseCommand = responseFuture.waitResponse(timeoutMillis);
             if (null == responseCommand) {
                 if (responseFuture.isSendRequestOK()) {
+                    //发送成功，但是响应没回来
                     throw new RemotingTimeoutException(RemotingHelper.parseSocketAddressAddr(addr), timeoutMillis,
                             responseFuture.getCause());
                 } else {
+                    //未发送成功
                     throw new RemotingSendRequestException(RemotingHelper.parseSocketAddressAddr(addr), responseFuture.getCause());
                 }
             }

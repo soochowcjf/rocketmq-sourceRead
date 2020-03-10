@@ -75,6 +75,7 @@ public class RemotingCommand {
         }
     }
 
+    //----------------------------------------header
     private int code;
     private LanguageCode language = LanguageCode.JAVA;
     private int version = 0;
@@ -82,10 +83,14 @@ public class RemotingCommand {
     private int flag = 0;
     private String remark;
     private HashMap<String, String> extFields;
+    //-----------------------------------------
+
+
     private transient CommandCustomHeader customHeader;
 
     private SerializeType serializeTypeCurrentRPC = serializeTypeConfigInThisServer;
 
+    //消息体
     private transient byte[] body;
 
     protected RemotingCommand() {
@@ -359,7 +364,7 @@ public class RemotingCommand {
 
     public ByteBuffer encode() {
         // 1> header length size
-        // 消息总长度
+        // 消息头总长度
         int length = 4;
 
         // 2> header data length
@@ -400,6 +405,11 @@ public class RemotingCommand {
         return result;
     }
 
+    /**
+     * 对头部进行编码
+     *
+     * @return
+     */
     private byte[] headerEncode() {
         this.makeCustomHeaderToNet();
         if (SerializeType.ROCKETMQ == serializeTypeCurrentRPC) {
@@ -409,6 +419,9 @@ public class RemotingCommand {
         }
     }
 
+    /**
+     * 将自定义的CommandCustomHeader内部的属性，放入extFields中
+     */
     public void makeCustomHeaderToNet() {
         if (this.customHeader != null) {
             Field[] fields = getClazzFields(customHeader.getClass());

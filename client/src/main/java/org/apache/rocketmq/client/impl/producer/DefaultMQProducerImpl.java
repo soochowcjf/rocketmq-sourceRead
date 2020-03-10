@@ -517,6 +517,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
         long beginTimestampFirst = System.currentTimeMillis();
         long beginTimestampPrev = beginTimestampFirst;
         long endTimestamp = beginTimestampFirst;
+        //尝试获取TopicPublishInfo的路由信息
         TopicPublishInfo topicPublishInfo = this.tryToFindTopicPublishInfo(msg.getTopic());
         if (topicPublishInfo != null && topicPublishInfo.ok()) {
             boolean callTimeout = false;
@@ -649,17 +650,28 @@ public class DefaultMQProducerImpl implements MQProducerInner {
                 null).setResponseCode(ClientErrorCode.NOT_FOUND_TOPIC_EXCEPTION);
     }
 
+    /**
+     * 根据msg的topic从topicPublishInfoTable获取对应的topicPublishInfo
+     * 如果没有则更新路由信息，从nameserver端拉取最新路由信息
+     *
+     * @param topic
+     * @return
+     */
     private TopicPublishInfo tryToFindTopicPublishInfo(final String topic) {
+        //1.先从本地缓存变量topicPublishInfoTable中先get一次
         TopicPublishInfo topicPublishInfo = this.topicPublishInfoTable.get(topic);
         if (null == topicPublishInfo || !topicPublishInfo.ok()) {
             this.topicPublishInfoTable.putIfAbsent(topic, new TopicPublishInfo());
+            //没有取到的话，则从nameserver上更新topic路由信息
             this.mQClientFactory.updateTopicRouteInfoFromNameServer(topic);
+            //然后再从本地缓存变量topicPublishInfoTable中再get一次
             topicPublishInfo = this.topicPublishInfoTable.get(topic);
         }
 
         if (topicPublishInfo.isHaveTopicRouterInfo() || topicPublishInfo.ok()) {
             return topicPublishInfo;
         } else {
+            //第一次的时候isDefault为false，第二次的时候default为true，即为用默认的topic的参数进行更新
             this.mQClientFactory.updateTopicRouteInfoFromNameServer(topic, true, this.defaultMQProducer);
             topicPublishInfo = this.topicPublishInfoTable.get(topic);
             return topicPublishInfo;
