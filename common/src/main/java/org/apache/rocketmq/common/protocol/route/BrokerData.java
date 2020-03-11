@@ -24,10 +24,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * broker信息
+ */
 public class BrokerData implements Comparable<BrokerData> {
     private final Random random = new Random();
+    /**
+     * 集群name
+     */
     private String cluster;
+    /**
+     * 主从的brokername是一致的
+     * brokerName
+     */
     private String brokerName;
+    /**
+     * 关键点：一个broker = 1个master + 多个slave，master的brokerId = 0, slave的brokerId  > 0
+     * brokerId对应broker地址
+     * master的brokerId为0L，从节点的brokerId>0
+     */
     private HashMap<Long/* brokerId */, String/* broker address */> brokerAddrs;
 
     public BrokerData() {

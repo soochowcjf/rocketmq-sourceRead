@@ -17,9 +17,13 @@
 package org.apache.rocketmq.common.constant;
 
 public class PermName {
+    //8
     public static final int PERM_PRIORITY = 0x1 << 3;
+    //4
     public static final int PERM_READ = 0x1 << 2;
+    //2
     public static final int PERM_WRITE = 0x1 << 1;
+    //1
     public static final int PERM_INHERIT = 0x1 << 0;
 
     public static String perm2String(final int perm) {
@@ -49,5 +53,14 @@ public class PermName {
 
     public static boolean isInherited(final int perm) {
         return (perm & PERM_INHERIT) == PERM_INHERIT;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(PERM_PRIORITY);
+        System.out.println(PERM_READ);
+        System.out.println(PERM_WRITE);
+        System.out.println(PERM_INHERIT);
+        System.out.println(isWriteable(4));
+        System.out.println(isReadable(6));
     }
 }
