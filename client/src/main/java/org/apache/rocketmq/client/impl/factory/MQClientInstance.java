@@ -73,9 +73,16 @@ public class MQClientInstance {
     private final NettyClientConfig nettyClientConfig;
     private final MQClientAPIImpl mQClientAPIImpl;
     private final MQAdminImpl mQAdminImpl;
+    /**
+     * 保存topic对应TopicRouteData的映射
+     */
     private final ConcurrentMap<String/* Topic */, TopicRouteData> topicRouteTable = new ConcurrentHashMap<String, TopicRouteData>();
     private final Lock lockNamesrv = new ReentrantLock();
     private final Lock lockHeartbeat = new ReentrantLock();
+    /**
+     * brokerName 对应 主和从
+     * master的brokerId为0L，从节点的brokerId>0
+     */
     private final ConcurrentMap<String/* Broker Name */, HashMap<Long/* brokerId */, String/* address */>> brokerAddrTable =
             new ConcurrentHashMap<String, HashMap<Long, String>>();
     private final ConcurrentMap<String/* Broker Name */, HashMap<String/* address */, Integer>> brokerVersionTable =
@@ -161,12 +168,13 @@ public class MQClientInstance {
             //取出TopicRouteData中的List<QueueData> queueDatas
             List<QueueData> qds = route.getQueueDatas();
             Collections.sort(qds);
+            //遍历，一个topic存在多个master上，（存放在几个master上，就有几个QueueData）
             for (QueueData qd : qds) {
                 if (PermName.isWriteable(qd.getPerm())) {
                     BrokerData brokerData = null;
-                    //遍历TopicRouteData中的brokerDatas
+                    //遍历TopicRouteData中的 brokerDatas
                     for (BrokerData bd : route.getBrokerDatas()) {
-                        //找到对应的Master
+                        //根据brokerName来关联，找到对应的 BrokerData
                         if (bd.getBrokerName().equals(qd.getBrokerName())) {
                             brokerData = bd;
                             break;
@@ -176,14 +184,14 @@ public class MQClientInstance {
                     if (null == brokerData) {
                         continue;
                     }
-
+                    //如果匹配出的BrokerData，不存在master节点
                     if (!brokerData.getBrokerAddrs().containsKey(MixAll.MASTER_ID)) {
                         continue;
                     }
 
                     //遍历所有的writeQueueNums
                     for (int i = 0; i < qd.getWriteQueueNums(); i++) {
-                        //创建每1个MessageQueue
+                        //构建MessageQueue，发送数据时，queueId其实是局部的，对于同1个topic，每个Master上面的queueId编号都是从0开始的
                         MessageQueue mq = new MessageQueue(topic, qd.getBrokerName(), i);
                         info.getMessageQueueList().add(mq);
                     }

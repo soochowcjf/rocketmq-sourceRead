@@ -18,6 +18,10 @@ package org.apache.rocketmq.common.message;
 
 import java.io.Serializable;
 
+/**
+ * queueId其实是局部的，对于同1个topic，每个Master上面的queueId编号都是从0开始的。
+ * 假设一个topic有3个Master，writeQueueNums = 8。那也就意味着：每个Master上面都有8个queue，queueId为0 – 7
+ */
 public class MessageQueue implements Comparable<MessageQueue>, Serializable {
     private static final long serialVersionUID = 6191200464116433425L;
     private String topic;

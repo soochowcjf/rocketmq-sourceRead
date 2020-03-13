@@ -21,7 +21,9 @@
 package org.apache.rocketmq.common.protocol.route;
 
 /**
- * 队列信息 todo
+ * 队列信息
+ * <p>
+ * 通过brokerName 可以关联 BrokerData
  */
 public class QueueData implements Comparable<QueueData> {
     private String brokerName;

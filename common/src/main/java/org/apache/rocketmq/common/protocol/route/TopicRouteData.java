@@ -26,8 +26,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * 一个topic 对应多个 QueueData, QueueData中的brokerName 关联 BrokerData，一个 BrokerData 由master和slave组成
+ * <p>
+ * topic路由信息
+ */
 public class TopicRouteData extends RemotingSerializable {
     private String orderTopicConf;
+    /**
+     * 存放在几个master上，就有几个QueueData
+     */
     private List<QueueData> queueDatas;
     /**
      * 一个topic下可以有多个broker
