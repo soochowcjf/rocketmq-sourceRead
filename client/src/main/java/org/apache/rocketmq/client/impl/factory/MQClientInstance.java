@@ -600,6 +600,14 @@ public class MQClientInstance {
         }
     }
 
+    /**
+     * 内部会去 nameserver 拉去路由信息
+     *
+     * @param topic
+     * @param isDefault
+     * @param defaultMQProducer
+     * @return
+     */
     public boolean updateTopicRouteInfoFromNameServer(final String topic, boolean isDefault,
                                                       DefaultMQProducer defaultMQProducer) {
         try {
