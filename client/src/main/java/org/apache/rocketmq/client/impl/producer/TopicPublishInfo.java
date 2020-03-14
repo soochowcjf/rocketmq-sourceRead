@@ -80,6 +80,7 @@ public class TopicPublishInfo {
                 if (pos < 0)
                     pos = 0;
                 MessageQueue mq = this.messageQueueList.get(pos);
+                //选择不和上一次的brokerName相同的
                 if (!mq.getBrokerName().equals(lastBrokerName)) {
                     return mq;
                 }

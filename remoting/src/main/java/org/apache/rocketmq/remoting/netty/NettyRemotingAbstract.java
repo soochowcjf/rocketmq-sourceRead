@@ -429,7 +429,10 @@ public abstract class NettyRemotingAbstract {
                 }
             });
 
-            //等待broker端返回响应，内部使用countDownLatch来实现同步
+            /**
+             * 等待broker端返回响应，内部使用countDownLatch来实现同步
+             * 释放countDownLatch {@link NettyRemotingAbstract#processResponseCommand}
+             */
             RemotingCommand responseCommand = responseFuture.waitResponse(timeoutMillis);
             if (null == responseCommand) {
                 if (responseFuture.isSendRequestOK()) {

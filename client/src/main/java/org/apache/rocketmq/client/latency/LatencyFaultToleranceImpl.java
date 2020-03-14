@@ -26,8 +26,15 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class LatencyFaultToleranceImpl implements LatencyFaultTolerance<String> {
+
+    /**
+     * 对象故障信息Table
+     */
     private final ConcurrentHashMap<String, FaultItem> faultItemTable = new ConcurrentHashMap<String, FaultItem>(16);
 
+    /**
+     * 对象选择Index
+     */
     private final ThreadLocalIndex whichItemWorst = new ThreadLocalIndex();
 
     @Override
@@ -63,6 +70,11 @@ public class LatencyFaultToleranceImpl implements LatencyFaultTolerance<String> 
         this.faultItemTable.remove(name);
     }
 
+    /**
+     * 选择一个相对优秀的对象
+     *
+     * @return
+     */
     @Override
     public String pickOneAtLeast() {
         final Enumeration<FaultItem> elements = this.faultItemTable.elements();
@@ -98,14 +110,30 @@ public class LatencyFaultToleranceImpl implements LatencyFaultTolerance<String> 
     }
 
     class FaultItem implements Comparable<FaultItem> {
+
+        /**
+         * 对象名
+         */
         private final String name;
+        /**
+         * 延迟
+         */
         private volatile long currentLatency;
+        /**
+         * 开始可用时间
+         */
         private volatile long startTimestamp;
 
         public FaultItem(final String name) {
             this.name = name;
         }
 
+        /**
+         * 可用性 > 延迟 > 开始可用时间
+         *
+         * @param other
+         * @return
+         */
         @Override
         public int compareTo(final FaultItem other) {
             if (this.isAvailable() != other.isAvailable()) {
@@ -131,6 +159,11 @@ public class LatencyFaultToleranceImpl implements LatencyFaultTolerance<String> 
             return 0;
         }
 
+        /**
+         * 是否可用：当开始可用时间大于当前时间
+         *
+         * @return
+         */
         public boolean isAvailable() {
             return (System.currentTimeMillis() - startTimestamp) >= 0;
         }

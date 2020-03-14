@@ -23,6 +23,7 @@ import org.apache.rocketmq.remoting.CommandCustomHeader;
 import org.apache.rocketmq.remoting.annotation.CFNotNull;
 import org.apache.rocketmq.remoting.common.RemotingHelper;
 import org.apache.rocketmq.remoting.exception.RemotingCommandException;
+import org.apache.rocketmq.remoting.netty.NettyDecoder;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -153,7 +154,7 @@ public class RemotingCommand {
     }
 
     /**
-     * 在调用该方法之前，已经在 NettyDecoder 中进行了拆包处理，去掉了总长度域4个字节
+     * 在调用该方法之前，已经在 #{@link NettyDecoder} 中进行了拆包处理，去掉了总长度域4个字节
      *
      * @param byteBuffer
      * @return
