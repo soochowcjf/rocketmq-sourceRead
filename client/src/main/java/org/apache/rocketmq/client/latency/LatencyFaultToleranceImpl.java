@@ -46,6 +46,7 @@ public class LatencyFaultToleranceImpl implements LatencyFaultTolerance<String> 
             faultItem.setStartTimestamp(System.currentTimeMillis() + notAvailableDuration);
 
             old = this.faultItemTable.putIfAbsent(name, faultItem);
+            //有意义？？？？？？
             if (old != null) {
                 old.setCurrentLatency(currentLatency);
                 old.setStartTimestamp(System.currentTimeMillis() + notAvailableDuration);
@@ -160,7 +161,7 @@ public class LatencyFaultToleranceImpl implements LatencyFaultTolerance<String> 
         }
 
         /**
-         * 是否可用：当开始可用时间大于当前时间
+         * 是否可用：当前时间戳 > 开始可用时间戳
          *
          * @return
          */
