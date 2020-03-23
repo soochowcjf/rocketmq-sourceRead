@@ -20,7 +20,7 @@ import io.netty.channel.Channel;
 
 /**
  * 事件封装类
- * 主要包括几个属性：时间种类、channel的地址、channel
+ * 主要包括几个属性：事件种类、channel的地址、channel
  */
 public class NettyEvent {
     private final NettyEventType type;

@@ -596,7 +596,7 @@ public abstract class NettyRemotingAbstract {
 
             while (!this.isStopped()) {
                 try {
-                    //3s,有事件出队的话就会break，那后面的关闭事件怎么处理的？这里需要后面来解答 todo
+                    //这里会有一个3s的拉取时间，防止线程空轮询
                     NettyEvent event = this.eventQueue.poll(3000, TimeUnit.MILLISECONDS);
                     if (event != null && listener != null) {
                         switch (event.getType()) {
