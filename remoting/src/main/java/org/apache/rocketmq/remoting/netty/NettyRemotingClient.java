@@ -159,6 +159,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
                         ChannelPipeline pipeline = ch.pipeline();
                         if (nettyClientConfig.isUseTLS()) {
                             if (null != sslContext) {
+                                //defaultEventExecutorGroup,处理pipeline业务的线程池
                                 pipeline.addFirst(defaultEventExecutorGroup, "sslHandler", sslContext.newHandler(ch.alloc()));
                                 log.info("Prepend SSL handler");
                             } else {
