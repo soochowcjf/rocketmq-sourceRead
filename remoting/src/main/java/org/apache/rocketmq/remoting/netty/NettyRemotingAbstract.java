@@ -405,8 +405,7 @@ public abstract class NettyRemotingAbstract {
         }
     }
 
-    public RemotingCommand invokeSyncImpl(final Channel channel, final RemotingCommand request,
-                                          final long timeoutMillis)
+    public RemotingCommand invokeSyncImpl(final Channel channel, final RemotingCommand request, final long timeoutMillis)
             throws InterruptedException, RemotingSendRequestException, RemotingTimeoutException {
         final int opaque = request.getOpaque();
 
@@ -427,6 +426,7 @@ public abstract class NettyRemotingAbstract {
 
                     responseTable.remove(opaque);
                     responseFuture.setCause(f.cause());
+                    //发送失败，释放 countDownLatch
                     responseFuture.putResponse(null);
                     log.warn("send a request command to channel <" + addr + "> failed.");
                 }
@@ -434,7 +434,7 @@ public abstract class NettyRemotingAbstract {
 
             /**
              * 等待broker端返回响应，内部使用countDownLatch来实现同步
-             * 释放countDownLatch {@link NettyRemotingAbstract#processResponseCommand}
+             * 释放countDownLatch 并这只返回的 RemotingCommand {@link NettyRemotingAbstract#processResponseCommand}
              */
             RemotingCommand responseCommand = responseFuture.waitResponse(timeoutMillis);
             if (null == responseCommand) {

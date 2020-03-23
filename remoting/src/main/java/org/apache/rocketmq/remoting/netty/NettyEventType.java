@@ -20,8 +20,12 @@ public enum NettyEventType {
     /**
      * 事件种类
      */
+    //连接
     CONNECT,
+    //关闭
     CLOSE,
+    //空闲
     IDLE,
+    //异常
     EXCEPTION
 }
