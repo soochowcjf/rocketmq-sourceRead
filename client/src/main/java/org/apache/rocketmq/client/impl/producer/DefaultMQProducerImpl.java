@@ -65,8 +65,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
     /**
      * 每个topic对应一个TopicPublishInfo
      */
-    private final ConcurrentMap<String/* topic */, TopicPublishInfo> topicPublishInfoTable =
-            new ConcurrentHashMap<String, TopicPublishInfo>();
+    private final ConcurrentMap<String/* topic */, TopicPublishInfo> topicPublishInfoTable = new ConcurrentHashMap<String, TopicPublishInfo>();
     private final ArrayList<SendMessageHook> sendMessageHookList = new ArrayList<SendMessageHook>();
     private final RPCHook rpcHook;
     private final BlockingQueue<Runnable> asyncSenderThreadPoolQueue;
@@ -91,8 +90,10 @@ public class DefaultMQProducerImpl implements MQProducerInner {
 
         this.asyncSenderThreadPoolQueue = new LinkedBlockingQueue<Runnable>(50000);
         this.defaultAsyncSenderExecutor = new ThreadPoolExecutor(
+                //核心线程数
                 Runtime.getRuntime().availableProcessors(),
                 Runtime.getRuntime().availableProcessors(),
+                //core和max一样大，这里设置keepAliveTime其实没有意义,问题不大
                 1000 * 60,
                 TimeUnit.MILLISECONDS,
                 this.asyncSenderThreadPoolQueue,
@@ -153,8 +154,10 @@ public class DefaultMQProducerImpl implements MQProducerInner {
                     this.defaultMQProducer.changeInstanceNameToPID();
                 }
 
+                //从本地缓存变量 factoryTable 中查询，如果不存在的话则创建一个
                 this.mQClientFactory = MQClientManager.getInstance().getOrCreateMQClientInstance(this.defaultMQProducer, rpcHook);
 
+                //将 group 和 DefaultMQProducerImpl 注册到本地缓存变量 producerTable 中
                 boolean registerOK = mQClientFactory.registerProducer(this.defaultMQProducer.getProducerGroup(), this);
                 if (!registerOK) {
                     this.serviceState = ServiceState.CREATE_JUST;
@@ -163,8 +166,10 @@ public class DefaultMQProducerImpl implements MQProducerInner {
                             null);
                 }
 
+                //将 topic 和 TopicPublicInfo 注册到本地缓存变量 topicPublicInfoTable 中
                 this.topicPublishInfoTable.put(this.defaultMQProducer.getCreateTopicKey(), new TopicPublishInfo());
 
+                //核心类启动，内部会启动很多task
                 if (startFactory) {
                     mQClientFactory.start();
                 }
@@ -184,8 +189,10 @@ public class DefaultMQProducerImpl implements MQProducerInner {
                 break;
         }
 
+        //发送心跳给所有的broker
         this.mQClientFactory.sendHeartbeatToAllBrokerWithLock();
 
+        //去除过期的请求
         this.timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {

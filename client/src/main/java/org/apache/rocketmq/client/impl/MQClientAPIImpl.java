@@ -75,8 +75,10 @@ public class MQClientAPIImpl {
         System.setProperty(RemotingCommand.REMOTING_VERSION_KEY, Integer.toString(MQVersion.CURRENT_VERSION));
     }
 
+    //实现远程通信的类
     private final RemotingClient remotingClient;
     private final TopAddressing topAddressing;
+    //客户端处理器
     private final ClientRemotingProcessor clientRemotingProcessor;
     private String nameSrvAddr = null;
     private ClientConfig clientConfig;
@@ -90,6 +92,7 @@ public class MQClientAPIImpl {
         this.clientRemotingProcessor = clientRemotingProcessor;
 
         this.remotingClient.registerRPCHook(rpcHook);
+        //客户端注册请求码对应的处理器
         this.remotingClient.registerProcessor(RequestCode.CHECK_TRANSACTION_STATE, this.clientRemotingProcessor, null);
 
         this.remotingClient.registerProcessor(RequestCode.NOTIFY_CONSUMER_IDS_CHANGED, this.clientRemotingProcessor, null);
@@ -144,8 +147,18 @@ public class MQClientAPIImpl {
         this.remotingClient.shutdown();
     }
 
-    public void createSubscriptionGroup(final String addr, final SubscriptionGroupConfig config,
-                                        final long timeoutMillis)
+    /**
+     * 创建订阅组
+     *
+     * @param addr
+     * @param config
+     * @param timeoutMillis
+     * @throws RemotingException
+     * @throws MQBrokerException
+     * @throws InterruptedException
+     * @throws MQClientException
+     */
+    public void createSubscriptionGroup(final String addr, final SubscriptionGroupConfig config, final long timeoutMillis)
             throws RemotingException, MQBrokerException, InterruptedException, MQClientException {
         RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.UPDATE_AND_CREATE_SUBSCRIPTIONGROUP, null);
 
@@ -167,6 +180,18 @@ public class MQClientAPIImpl {
 
     }
 
+    /**
+     * 创建topic
+     *
+     * @param addr
+     * @param defaultTopic
+     * @param topicConfig
+     * @param timeoutMillis
+     * @throws RemotingException
+     * @throws MQBrokerException
+     * @throws InterruptedException
+     * @throws MQClientException
+     */
     public void createTopic(final String addr, final String defaultTopic, final TopicConfig topicConfig,
                             final long timeoutMillis)
             throws RemotingException, MQBrokerException, InterruptedException, MQClientException {
@@ -196,6 +221,17 @@ public class MQClientAPIImpl {
         throw new MQClientException(response.getCode(), response.getRemark());
     }
 
+    /**
+     * 创建权限控制
+     *
+     * @param addr
+     * @param plainAccessConfig
+     * @param timeoutMillis
+     * @throws RemotingException
+     * @throws MQBrokerException
+     * @throws InterruptedException
+     * @throws MQClientException
+     */
     public void createPlainAccessConfig(final String addr, final PlainAccessConfig plainAccessConfig,
                                         final long timeoutMillis)
             throws RemotingException, MQBrokerException, InterruptedException, MQClientException {
@@ -225,6 +261,17 @@ public class MQClientAPIImpl {
         throw new MQClientException(response.getCode(), response.getRemark());
     }
 
+    /**
+     * 删除权限控制
+     *
+     * @param addr
+     * @param accessKey
+     * @param timeoutMillis
+     * @throws RemotingException
+     * @throws MQBrokerException
+     * @throws InterruptedException
+     * @throws MQClientException
+     */
     public void deleteAccessConfig(final String addr, final String accessKey, final long timeoutMillis)
             throws RemotingException, MQBrokerException, InterruptedException, MQClientException {
         DeleteAccessConfigRequestHeader requestHeader = new DeleteAccessConfigRequestHeader();
@@ -246,6 +293,17 @@ public class MQClientAPIImpl {
         throw new MQClientException(response.getCode(), response.getRemark());
     }
 
+    /**
+     * 更新全局白名单
+     *
+     * @param addr
+     * @param globalWhiteAddrs
+     * @param timeoutMillis
+     * @throws RemotingException
+     * @throws MQBrokerException
+     * @throws InterruptedException
+     * @throws MQClientException
+     */
     public void updateGlobalWhiteAddrsConfig(final String addr, final String globalWhiteAddrs, final long timeoutMillis)
             throws RemotingException, MQBrokerException, InterruptedException, MQClientException {
 
@@ -268,6 +326,19 @@ public class MQClientAPIImpl {
         throw new MQClientException(response.getCode(), response.getRemark());
     }
 
+    /**
+     * 获取broker集群权限控制版本的信息
+     *
+     * @param addr
+     * @param timeoutMillis
+     * @return
+     * @throws RemotingCommandException
+     * @throws InterruptedException
+     * @throws RemotingTimeoutException
+     * @throws RemotingSendRequestException
+     * @throws RemotingConnectException
+     * @throws MQBrokerException
+     */
     public ClusterAclVersionInfo getBrokerClusterAclInfo(final String addr,
                                                          final long timeoutMillis) throws RemotingCommandException, InterruptedException, RemotingTimeoutException,
             RemotingSendRequestException, RemotingConnectException, MQBrokerException {
@@ -295,6 +366,19 @@ public class MQClientAPIImpl {
 
     }
 
+    /**
+     * 获取broker集群权限配置信息
+     *
+     * @param addr
+     * @param timeoutMillis
+     * @return
+     * @throws RemotingCommandException
+     * @throws InterruptedException
+     * @throws RemotingTimeoutException
+     * @throws RemotingSendRequestException
+     * @throws RemotingConnectException
+     * @throws MQBrokerException
+     */
     public AclConfig getBrokerClusterConfig(final String addr, final long timeoutMillis) throws RemotingCommandException, InterruptedException, RemotingTimeoutException,
             RemotingSendRequestException, RemotingConnectException, MQBrokerException {
         RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.GET_BROKER_CLUSTER_ACL_CONFIG, null);

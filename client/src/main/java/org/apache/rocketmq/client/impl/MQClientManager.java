@@ -28,10 +28,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class MQClientManager {
     private final static InternalLogger log = ClientLogger.getLog();
+
+    //单例
     private static MQClientManager instance = new MQClientManager();
     private AtomicInteger factoryIndexGenerator = new AtomicInteger();
-    private ConcurrentMap<String/* clientId */, MQClientInstance> factoryTable =
-            new ConcurrentHashMap<String, MQClientInstance>();
+    private ConcurrentMap<String/* clientId */, MQClientInstance> factoryTable = new ConcurrentHashMap<String, MQClientInstance>();
 
     private MQClientManager() {
 

@@ -257,6 +257,7 @@ public class MQClientInstance {
                 @Override
                 public void run() {
                     try {
+                        //定期去查询和更新 nameServer 的地址
                         MQClientInstance.this.mQClientAPIImpl.fetchNameServerAddr();
                     } catch (Exception e) {
                         log.error("ScheduledTask fetchNameServerAddr exception", e);
@@ -270,6 +271,7 @@ public class MQClientInstance {
             @Override
             public void run() {
                 try {
+                    //定期从 nameServer 中更新topic路由信息
                     MQClientInstance.this.updateTopicRouteInfoFromNameServer();
                 } catch (Exception e) {
                     log.error("ScheduledTask updateTopicRouteInfoFromNameServer exception", e);
@@ -282,7 +284,9 @@ public class MQClientInstance {
             @Override
             public void run() {
                 try {
+                    //定期清除下线的 broker 信息
                     MQClientInstance.this.cleanOfflineBroker();
+                    //定期发送心跳包到所有的 broker
                     MQClientInstance.this.sendHeartbeatToAllBrokerWithLock();
                 } catch (Exception e) {
                     log.error("ScheduledTask sendHeartbeatToAllBroker exception", e);
@@ -295,6 +299,7 @@ public class MQClientInstance {
             @Override
             public void run() {
                 try {
+                    //定期持久化 offset
                     MQClientInstance.this.persistAllConsumerOffset();
                 } catch (Exception e) {
                     log.error("ScheduledTask persistAllConsumerOffset exception", e);
@@ -307,6 +312,7 @@ public class MQClientInstance {
             @Override
             public void run() {
                 try {
+                    //定期调整消费的线程池
                     MQClientInstance.this.adjustThreadPool();
                 } catch (Exception e) {
                     log.error("ScheduledTask adjustThreadPool exception", e);
@@ -547,6 +553,7 @@ public class MQClientInstance {
                         String addr = entry1.getValue();
                         if (addr != null) {
                             if (consumerEmpty) {
+                                //心跳包只发送给主节点
                                 if (id != MixAll.MASTER_ID)
                                     continue;
                             }

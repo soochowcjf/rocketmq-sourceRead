@@ -106,7 +106,7 @@ public interface MQAdmin {
     /**
      * @return The {@code MessageExt} of given msgId
      */
-    MessageExt viewMessage(String topic,
-                           String msgId) throws RemotingException, MQBrokerException, InterruptedException, MQClientException;
+    MessageExt viewMessage(String topic, String msgId)
+            throws RemotingException, MQBrokerException, InterruptedException, MQClientException;
 
 }
